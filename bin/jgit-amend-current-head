@@ -1,0 +1,31 @@
+#!/bin/bash
+# load common functions and variables
+SCRIPT_DIR="$(dirname "$(readlink -f "${0}")")"
+. "${SCRIPT_DIR}/../inc/common.sh"
+
+common_setup_env
+
+cd "${REPO_DIR}" || {
+    error "Unable to change directories"
+    exit 255
+}
+
+usage() {
+    echo "$0 [-n]"
+    exit 1
+}
+
+git diff
+git log HEAD^..HEAD
+
+echo "Press Enter to amend and upsalt"
+read -r
+
+git commit --amend -a -C HEAD && upsalt
+
+while getopts "n" opt; do
+  case $opt in
+    n) ssh devbox -- "/home/jjones/bin/nomad_redeploy" ;;
+    *) usage;;
+  esac
+done

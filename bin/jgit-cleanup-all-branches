@@ -1,0 +1,54 @@
+#!/bin/bash
+
+# load common functions and variables
+SCRIPT_DIR="$(dirname "$(readlink -f "${0}")")"
+. "${SCRIPT_DIR}/../inc/common.sh"
+
+common_setup_env
+
+cd "${REPO_DIR}" || {
+    error "Unable to change directories"
+    exit 255
+}
+
+cleanup() {
+    info "Cleaning up"
+}
+
+trap cleanup SIGHUP SIGINT SIGQUIT SIGABRT
+
+may_be_merged() {
+    branch_name="${1}"
+
+    if git branch -r | grep "origin/${branch_name}" >/dev/null ; then
+        error "# Found ${branch_name} in origin branches, probably not merged"
+        return 1
+    fi
+
+    if [[ "${branch_name}" =~ (IN-[0-9]+) ]] ; then
+        ticket_number="${BASH_REMATCH[1]}"
+
+        if git log -n 500 origin/main | grep "${ticket_number}" >/dev/null 2>&1 ; then
+            info "# Found ${ticket_number} in git log, probably merged"
+            return 0
+        fi
+
+    fi
+
+    info "# ${branch_name} Not found, probably not merged"
+    return 1
+}
+
+for branch in $(git branch); do
+    if may_be_merged "${branch}" ; then
+        git show -q "${branch}"
+        gum confirm "Delete ${branch}"
+        err="$?"
+
+        case $err in
+            0) git branch -D "${branch}" ;;
+            1) echo "Skipping" ;;
+            *) exit 255 ;;
+        esac
+    fi
+done

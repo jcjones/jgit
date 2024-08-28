@@ -1,0 +1,122 @@
+#!/bin/bash
+
+usage() {
+    echo "$0 [-n]"
+    exit 1
+}
+
+# todo remove
+# CONTROLMASTER=~/.ssh/controlmasters/pug\@10.10.4.90\:22
+# if [ -r ${CONTROLMASTER} ] ; then
+#     if $(( (`date +%s` - `stat -L --format %Y ${CONTROLMASTER}`) > (60*60) )); then
+#         rm ${CONTROLMASTER}
+#     fi
+# fi
+
+# load common functions and variables
+SCRIPT_DIR="$(dirname "$(readlink -f "${0}")")"
+. "${SCRIPT_DIR}/../inc/common.sh"
+
+common_setup_env
+
+CUR_BRANCH=$(git symbolic-ref --short HEAD)
+DEV_BRANCH=dev
+MERGE_OVERRIDES=()
+#MERGE_OVERRIDES=("-X" "theirs")
+
+cleanup() {
+    info "Cleaning up, returning local branch to ${CUR_BRANCH}."
+    git checkout "${CUR_BRANCH}"
+}
+
+trap cleanup SIGHUP SIGINT SIGQUIT SIGABRT EXIT
+
+cd "${REPO_DIR}" || {
+    error "Unable to change directories"
+    exit 255
+}
+
+git diff --quiet || {
+    error "Branch is currently in a dirty state."
+    exit 1
+}
+
+[ -z "$(git status -s)" ] || {
+    error "Branch has uncommited changes."
+    exit 1
+}
+
+if [ "${CUR_BRANCH}" != "main" ] ; then
+    grep "${CUR_BRANCH}" "${BRANCH_LIST}" >/dev/null || {
+        error "${CUR_BRANCH} does not appear in ${BRANCH_LIST}, appending it. Make sure it's where you want."
+        echo "${CUR_BRANCH}" >> "${BRANCH_LIST}"
+        vim "${BRANCH_LIST}"
+        exit 1
+    }
+fi
+
+git checkout ${DEV_BRANCH} || git checkout -b ${DEV_BRANCH} || {
+    error "Failed to switch branches to ${DEV_BRANCH}, aborting."
+    exit 1
+}
+
+git symbolic-ref --short HEAD | grep ${DEV_BRANCH} || {
+    error "Not on the ${DEV_BRANCH} somehow, aborting."
+}
+
+git reset --hard "${TRACK_BRANCH}" || {
+    error "Couldn't reset ${DEV_BRANCH} to origin."
+    exit 1
+}
+
+while IFS= read -r branch_name || [ -n "$branch_name" ];
+do
+    [[ ${branch_name} =~ ^#.* ]] && continue
+    [[ -z ${branch_name} ]] && continue
+
+    git rev-parse "${branch_name}" 2>/dev/null || {
+        error "Branch ${branch_name} is missing"
+        continue
+    }
+
+    info "Merging ${branch_name} into ${DEV_BRANCH}"
+    merge_args=(
+        "${branch_name}"
+    )
+    if [ -n "${MERGE_OVERRIDES:-}" ]; then
+        merge_args+=("${MERGE_OVERRIDES[@]}")
+    fi
+    merge_args+=("-m" "Auto-merge ${branch_name} by upsalt-gb")
+
+    git merge "${merge_args[@]}" || {
+        error "Failed to merge ${branch_name} into ${DEV_BRANCH}."
+        git merge --abort
+        cleanup
+        exit 1
+    }
+done < "${BRANCH_LIST}"
+
+
+git push "${GITREMOTE}" HEAD:refs/heads/upsalt --force
+# shellcheck disable=SC2029
+cat <<EOF | ssh "${SSHREMOTE}" && notify "Upsalted ${REPO_DIR}"
+cd ${REMOTE_DIR}
+git stash push
+git fetch ${REMOTE_NAME_ON_DIR}
+git checkout upsalt
+git reset --hard ${REMOTE_NAME_ON_DIR}/upsalt
+echo "Checked out branch 'upsalt'"
+git stash pop || exit 0
+echo "Done on ${SSHREMOTE}!"
+EOF
+
+info "${SSHREMOTE} updated to ${GITREMOTE}/upsalt"
+
+cleanup
+
+while getopts "n" opt; do
+  case $opt in
+    n) ssh "${SSHREMOTE}" -- "/home/jjones/bin/nomad_redeploy" ;;
+    *) usage;;
+  esac
+done
