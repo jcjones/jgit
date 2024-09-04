@@ -18,10 +18,10 @@ usage() {
 git diff
 git log HEAD^..HEAD
 
-echo "Press Enter to amend and upsalt"
+echo "Press Enter to amend and jgit-push"
 read -r
 
-git commit --amend -a -C HEAD && upsalt
+git commit --amend -a -C HEAD && jgit-push
 
 while getopts "n" opt; do
   case $opt in
