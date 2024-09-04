@@ -92,5 +92,5 @@ _run_extra_cmd() {
 }
 
 common_complete_push() {
-    [ -n "${COMMON_RUN_EXTRA_CMD}" ] && _run_extra_cmd
+    [ -n "${COMMON_RUN_EXTRA_CMD:-}" ] && _run_extra_cmd
 }
