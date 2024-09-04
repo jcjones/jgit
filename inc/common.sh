@@ -22,9 +22,9 @@ notify() {
 _setup_help() {
     cat <<EOF
 Your git config is missing parameters. You'll want to add sections like:
-[upsalt]
+[jgit]
     default = proxmox
-[upsalt "proxmox"]
+[jgit "proxmox"]
     ssh-hostname = proxmox.internal
     remote-dir = /srv/nfs/DevEnv
     remote-name-on-remote-dir = proxmox
