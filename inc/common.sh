@@ -46,7 +46,7 @@ _git_get_conf_to_env() {
         _setup_help
         exit 99
     fi
-    export ${outvar}="${output}"
+    export "${outvar}"="${output}"
 }
 
 _usage() {
@@ -88,7 +88,7 @@ common_setup_env() {
 
 _run_extra_cmd() {
     _git_get_conf_to_env REMOTE_POST_PUSH_CMD "jgit.${GITREMOTE}.remote_after_push_cmd"
-    ssh ${SSHREMOTE} -- "${REMOTE_POST_PUSH_CMD}"
+    ssh "${SSHREMOTE}" -- "${REMOTE_POST_PUSH_CMD}"
 }
 
 common_complete_push() {

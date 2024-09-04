@@ -4,7 +4,7 @@
 SCRIPT_DIR="$(dirname "$(readlink -f "${0}")")"
 . "${SCRIPT_DIR}/../inc/common.sh"
 
-common_setup_env ${*:-}
+common_setup_env "${@:-}"
 
 CUR_BRANCH=$(git symbolic-ref --short HEAD)
 DEV_BRANCH=jgit-push-dev
