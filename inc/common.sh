@@ -49,6 +49,16 @@ _git_get_conf_to_env() {
     export ${outvar}="${output}"
 }
 
+_usage() {
+    cat <<EOF
+${0} [-e]
+
+-e      Run the command in jgit.${GITREMOTE}.remote_after_push_cmd on the remote
+        host after a successful jgit-push.
+EOF
+    exit 1
+}
+
 common_setup_env() {
     if ! hash gum ; then
         error "Missing gum, please install it"
@@ -67,4 +77,20 @@ common_setup_env() {
         info "Couldn't find ${BRANCH_LIST} branch list file, creating a default"
         touch "${BRANCH_LIST}"
     }
+
+    while getopts "eh" opt; do
+      case "${opt}" in
+        e) export COMMON_RUN_EXTRA_CMD=1;;
+        h | *) _usage;;
+      esac
+    done
+}
+
+_run_extra_cmd() {
+    _git_get_conf_to_env REMOTE_POST_PUSH_CMD "jgit.${GITREMOTE}.remote_after_push_cmd"
+    ssh ${SSHREMOTE} -- "${REMOTE_POST_PUSH_CMD}"
+}
+
+common_complete_push() {
+    [ -n "${COMMON_RUN_EXTRA_CMD}" ] && _run_extra_cmd
 }

@@ -10,22 +10,10 @@ cd "${REPO_DIR}" || {
     exit 255
 }
 
-usage() {
-    echo "$0 [-n]"
-    exit 1
-}
-
 git diff
 git log HEAD^..HEAD
 
 echo "Press Enter to amend and jgit-push"
 read -r
 
-git commit --amend -a -C HEAD && jgit-push
-
-while getopts "n" opt; do
-  case $opt in
-    n) ssh devbox -- "/home/jjones/bin/nomad_redeploy" ;;
-    *) usage;;
-  esac
-done
+git commit --amend -a -C HEAD && jgit-push ${*}

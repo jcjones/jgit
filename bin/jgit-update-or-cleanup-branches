@@ -48,7 +48,7 @@ rebase_or_clean() {
     return 1
 }
 
-trap cleanup SIGHUP SIGINT SIGQUIT SIGABRT
+trap cleanup SIGHUP SIGINT SIGQUIT SIGABRT EXIT
 
 git diff --quiet || {
     error "Branch is currently in a dirty state."
