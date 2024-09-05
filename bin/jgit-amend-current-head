@@ -16,4 +16,4 @@ git log HEAD^..HEAD
 echo "Press Enter to amend and jgit-push"
 read -r
 
-git commit --amend -a -C HEAD && jgit-push "${@}"
+git commit --amend -a -C HEAD && jgit-push "${@:-}"
