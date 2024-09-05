@@ -87,18 +87,17 @@ done < "${BRANCH_LIST}"
 git push "${GITREMOTE}" HEAD:refs/heads/jgit-push --force
 # shellcheck disable=SC2029
 cat <<EOF | ssh "${SSHREMOTE}" && notify "jgit-pushed ${REPO_DIR}"
-cd ${REMOTE_DIR}
+echo "Beginning work on ${SSHREMOTE}"
+cd ${REMOTE_DIR} || exit 1
 git stash push
 git fetch ${REMOTE_NAME_ON_DIR}
-git checkout jgit-push
+git checkout ${REMOTE_CHECKOUT_BRANCH}
 git reset --hard ${REMOTE_NAME_ON_DIR}/jgit-push
-echo "Checked out branch 'jgit-push'"
+echo "Updated '${REMOTE_CHECKOUT_BRANCH}' to '${REMOTE_NAME_ON_DIR}/jgit-push'"
 git stash pop || exit 0
 echo "Done on ${SSHREMOTE}!"
 EOF
 
-info "${SSHREMOTE} updated to ${GITREMOTE}/jgit-push"
-
-cleanup
+info "${SSHREMOTE} branch ${REMOTE_CHECKOUT_BRANCH} updated to ${GITREMOTE}/jgit-push"
 
 common_complete_push

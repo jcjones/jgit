@@ -15,7 +15,7 @@ cleanup() {
     info "Cleaning up"
 }
 
-trap cleanup SIGHUP SIGINT SIGQUIT SIGABRT
+trap cleanup SIGHUP SIGINT SIGQUIT SIGABRT EXIT
 
 may_be_merged() {
     branch_name="${1}"

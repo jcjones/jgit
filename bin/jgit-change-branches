@@ -13,11 +13,10 @@ cd "${REPO_DIR}" || {
 CUR_BRANCH=$(git symbolic-ref --short HEAD)
 
 cleanup() {
-    info "Cleaning up, returning branch to ${CUR_BRANCH}"
-    git checkout "${CUR_BRANCH}"
+    info "Cleaning up"
 }
 
-trap cleanup SIGHUP SIGINT SIGQUIT SIGABRT
+trap cleanup SIGHUP SIGINT SIGQUIT SIGABRT EXIT
 
 git diff --quiet || {
     error "Branch is currently in a dirty state."

@@ -31,7 +31,7 @@ done
 
 info "Using branch name ${branch_name}"
 
-trap cleanup SIGHUP SIGINT SIGQUIT SIGABRT
+trap cleanup SIGHUP SIGINT SIGQUIT SIGABRT EXIT
 
 git diff --quiet || {
     error "Branch is currently in a dirty state."

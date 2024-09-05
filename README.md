@@ -27,6 +27,7 @@ Then in each Git repo, configure the script inside your `git config -e`. Add sec
     ssh-hostname = proxmox.internal
     remote-dir = /srv/nfs/DevEnv
     remote-name-on-remote-dir = proxmox
+	remote-checkout-branch = main
     tracking-branch = origin/main
 ```
 
@@ -35,5 +36,6 @@ In this case:
 - `ssh-hostname`: The host the script will `ssh` into.
 - `remote-dir`: The directory of the checkout on `ssh-hostname`.
 - `remote-name-on-remote-dir`: The `remote` name used during a `git fetch` while in `remote-dir` on `ssh-hostname`.
-- `tracking-branch`: The branch to base `dev` on.
+- `remote-checkout-branch`: The branch name for the remote checkout, defaults to `main`
+- `tracking-branch`: The branch to base `dev` on, defaults to `origin/main`
 

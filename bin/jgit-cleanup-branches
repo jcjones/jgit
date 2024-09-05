@@ -45,7 +45,7 @@ may_be_merged() {
     return 1
 }
 
-trap cleanup SIGHUP SIGINT SIGQUIT SIGABRT
+trap cleanup SIGHUP SIGINT SIGQUIT SIGABRT EXIT
 
 git diff --quiet || {
     error "Branch is currently in a dirty state."
@@ -88,5 +88,3 @@ do
     echo ""
 
 done < "${BRANCH_LIST}"
-
-cleanup

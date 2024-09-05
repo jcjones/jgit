@@ -28,7 +28,9 @@ Your git config is missing parameters. You'll want to add sections like:
     ssh-hostname = proxmox.internal
     remote-dir = /srv/nfs/DevEnv
     remote-name-on-remote-dir = proxmox
-    tracking-branch = origin/main
+    # These are optional, with these defaults:
+    # remote-checkout-branch = main
+    # tracking-branch = origin/main
 EOF
 }
 
@@ -36,13 +38,12 @@ _git_get_conf_to_env() {
     local outvar key
     outvar="${1}"
     key="${2}"
+    default="${3:-}"
     if ! output="$(git config --get "${key}")"; then
-        error "Couldn't get Git key ${key}"
-        _setup_help
-        exit 99
+        output="${default}"
     fi
     if [ -z "${output}" ] ; then
-        echo "No results for Git key ${key}"
+        error "No results for Git key ${key}"
         _setup_help
         exit 99
     fi
@@ -68,8 +69,9 @@ common_setup_env() {
     REPO_DIR=$(git rev-parse --show-toplevel)
     BRANCH_LIST=${REPO_DIR}/.git/jgit-branches
     _git_get_conf_to_env GITREMOTE "jgit.default"
-    _git_get_conf_to_env TRACK_BRANCH "jgit.${GITREMOTE}.tracking-branch"
+    _git_get_conf_to_env TRACK_BRANCH "jgit.${GITREMOTE}.tracking-branch" "origin/main"
     _git_get_conf_to_env REMOTE_DIR "jgit.${GITREMOTE}.remote-dir"
+    _git_get_conf_to_env REMOTE_CHECKOUT_BRANCH "jgit.${GITREMOTE}.remote-checkout-branch" "main"
     _git_get_conf_to_env REMOTE_NAME_ON_DIR "jgit.${GITREMOTE}.remote-name-on-remote-dir"
     _git_get_conf_to_env SSHREMOTE "jgit.${GITREMOTE}.ssh-hostname"
 
