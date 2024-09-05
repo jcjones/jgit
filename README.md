@@ -16,7 +16,11 @@ When you use `jgit-push`, it:
 
 ## Installation
 
-Add the scripts in `bin/` to your path, one way or another.
+### Dependencies
+Install [gum](https://github.com/charmbracelet/gum) into your path.
+
+### Installation
+Add the scripts in `bin/` to your path, one way or another. Add to your `${PATH},` or symlink into your `${HOME}/bin`, whatever.
 
 Then in each Git repo, configure the script inside your `git config -e`. Add sections like the following:
 
@@ -27,6 +31,7 @@ Then in each Git repo, configure the script inside your `git config -e`. Add sec
     ssh-hostname = proxmox.internal
     remote-dir = /srv/nfs/DevEnv
     remote-name-on-remote-dir = proxmox
+    # The following options are optional, they have the listed defaults
 	remote-checkout-branch = main
     tracking-branch = origin/main
 ```

@@ -3,11 +3,19 @@
 set -euf
 
 error() {
-    gum style --border=rounded --foreground="#FF0000" "${*}"
+    if hash gum; then
+        gum style --border=rounded --foreground="#FF0000" "${*}"
+    else
+        echo "[ERROR] ${*}"
+    fi
 }
 
 info() {
-    gum style --border=rounded --foreground="#00FF00" "${*}"
+    if hash gum; then
+        gum style --border=rounded --foreground="#00FF00" "${*}"
+    else
+        echo "[INFO] ${*}"
+    fi
 }
 
 notify() {
@@ -16,6 +24,8 @@ notify() {
             osascript -e "display notification \"Complete\" with title \"${*}\"";;
         "Linux")
             notify-send "${*}";;
+        *)
+            echo "[NOTIFICATION] ${*}"
     esac
 }
 
@@ -61,11 +71,6 @@ EOF
 }
 
 common_setup_env() {
-    if ! hash gum ; then
-        error "Missing gum, please install it"
-        exit 99
-    fi
-
     REPO_DIR=$(git rev-parse --show-toplevel)
     BRANCH_LIST=${REPO_DIR}/.git/jgit-branches
     _git_get_conf_to_env GITREMOTE "jgit.default"

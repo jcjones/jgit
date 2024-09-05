@@ -39,6 +39,11 @@ may_be_merged() {
     return 1
 }
 
+if ! hash gum ; then
+    error "Missing gum, please install it"
+    exit 99
+fi
+
 for branch in $(git branch); do
     if may_be_merged "${branch}" ; then
         git show -q "${branch}"

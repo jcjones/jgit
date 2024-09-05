@@ -6,6 +6,11 @@ SCRIPT_DIR="$(dirname "$(readlink -f "${0}")")"
 
 common_setup_env
 
+if ! hash gum ; then
+    error "Missing gum, please install it"
+    exit 99
+fi
+
 cd "${REPO_DIR}" || {
     error "Unable to change directories"
     exit 255
