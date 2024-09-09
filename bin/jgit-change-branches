@@ -34,9 +34,11 @@ git diff --quiet || {
     exit 1
 }
 
-grep "${CUR_BRANCH}" "${BRANCH_LIST}" >/dev/null || {
-    info "Note: ${CUR_BRANCH} does not appear in ${BRANCH_LIST}."
-}
+if ! echo "${TRACK_BRANCH}" | grep "${CUR_BRANCH}" >/dev/null; then
+    grep "${CUR_BRANCH}" "${BRANCH_LIST}" >/dev/null || {
+        info "Note: ${CUR_BRANCH} does not appear in ${BRANCH_LIST}."
+    }
+fi
 
 branch=$(grep -E -v '^#' "${BRANCH_LIST}" | awk NF | fzf)
 if [ -z "${branch}" ] ; then
