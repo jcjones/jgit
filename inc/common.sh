@@ -74,7 +74,7 @@ common_setup_env() {
     REPO_DIR=$(git rev-parse --show-toplevel)
     BRANCH_LIST=${REPO_DIR}/.git/jgit-branches
     _git_get_conf_to_env GITREMOTE "jgit.default"
-    _git_get_conf_to_env TRACK_BRANCH "jgit.${GITREMOTE}.tracking-branch" "origin/main"
+    _git_get_conf_to_env TRACK_BRANCH "jgit.${GITREMOTE}.tracking-branch" "${GITREMOTE}/main"
     _git_get_conf_to_env REMOTE_DIR "jgit.${GITREMOTE}.remote-dir"
     _git_get_conf_to_env REMOTE_CHECKOUT_BRANCH "jgit.${GITREMOTE}.remote-checkout-branch" "main"
     _git_get_conf_to_env REMOTE_NAME_ON_DIR "jgit.${GITREMOTE}.remote-name-on-remote-dir"

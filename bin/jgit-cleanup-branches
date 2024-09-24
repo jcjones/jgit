@@ -26,7 +26,7 @@ may_be_merged() {
        return 1
     fi
 
-    if git branch -r | grep "origin/${branch_name}" >/dev/null ; then
+    if git branch -r | grep "${GITREMOTE}/${branch_name}" >/dev/null ; then
         echo "# Found ${branch_name} in origin branches, probably not merged"
         return 1
     fi
@@ -34,7 +34,7 @@ may_be_merged() {
     if [[ "${branch_name}" =~ (IN-[0-9]+) ]] ; then
         ticket_number="${BASH_REMATCH[1]}"
 
-        if git log -n 500 origin/main | grep "${ticket_number}" >/dev/null 2>&1 ; then
+        if git log -n 500 ${TRACK_BRANCH} | grep "${ticket_number}" >/dev/null 2>&1 ; then
             echo "# Found ${ticket_number} in git log, probably merged"
             return 0
         fi

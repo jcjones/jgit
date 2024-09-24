@@ -53,9 +53,12 @@ git checkout "${TRACK_BRANCH}" || {
     exit 1
 }
 
-git checkout -b "${branch_name}" "origin/${TRACK_BRANCH}" || {
+git checkout -b "${branch_name}" "${TRACK_BRANCH}" || {
     error "Couldn't move to new ${branch_name}"
     exit 1
 }
 
 echo "${branch_name}" >> "${BRANCH_LIST}"
+
+# Let the cleanup move us back
+CUR_BRANCH="${branch_name}"

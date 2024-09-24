@@ -12,7 +12,6 @@ cd "${REPO_DIR}" || {
 }
 
 CUR_BRANCH=$(git symbolic-ref --short HEAD)
-DEST_BRANCH=origin/main
 
 cleanup() {
     echo "Cleaning up, returning branch to ${CUR_BRANCH}"
@@ -26,13 +25,13 @@ rebase_or_clean() {
     branch_name="${1}"
 
     git checkout "${branch_name}" >/dev/null
-    git rebase --empty=drop "${DEST_BRANCH}" || {
-        error "Couldn't cleanly rebase ${branch_name} onto ${DEST_BRANCH}"
+    git rebase --empty=drop "${TRACK_BRANCH}" || {
+        error "Couldn't cleanly rebase ${branch_name} onto ${TRACK_BRANCH}"
         git rebase --abort
         return 1
     }
 
-    # If we're the same as DEST_BRANCH now, this branch is fully merged
+    # If we're the same as TRACK_BRANCH now, this branch is fully merged
     git checkout "${CUR_BRANCH}" >/dev/null
     if git branch --contains "${branch_name}" | grep "main"; then
         # Use lowercase d to make it fail if we were wrong somehow (?)
