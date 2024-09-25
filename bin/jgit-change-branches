@@ -10,7 +10,7 @@ cd "${REPO_DIR}" || {
     exit 255
 }
 
-CUR_BRANCH=$(git symbolic-ref --short HEAD)
+CUR_BRANCH=$(git symbolic-ref --short HEAD || echo "")
 
 cleanup() {
     info "Cleaning up"
