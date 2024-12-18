@@ -80,9 +80,21 @@ do
     }
 
     if may_be_merged "${branch_name}"; then
-        echo "git branch -D ${branch_name}"
-        echo "sed -i -n '/${branch_name}/!p' ${BRANCH_LIST}"
-        echo ""
+        sed_cmd="sed"
+
+        if [ "$(uname)" == "Darwin" ]; then
+            if ! hash gsed; then
+                error "You're on MacOS but don't have gsed installed, please install it."
+            fi
+        fi
+
+        if hash gsed; then
+            sed_cmd="gsed"
+        fi
+        if gum confirm "Confirm cleaning up ${branch_name}"; then
+            git branch -D ${branch_name} || error "Couldn't remove branch from git"
+            ${sed_cmd} -i -n "/${branch_name}/!p" ${BRANCH_LIST} || error "Couldn't cleanup from ${BRANCH_LIST}"
+        fi
     fi
 
     echo ""
