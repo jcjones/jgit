@@ -25,7 +25,7 @@ cleanup() {
 branch_name=""
 while true; do
     branch_name=$(gum input --placeholder="IN-XXXX-branch-name" --value="${branch_name}")
-    if [[ ${branch_name} =~ IN-[0-9]+-?[A-Za-z0-9_-]*$ ]]; then
+    if [[ ${branch_name} =~ [A-Za-z0-9_-]*$ ]]; then
         break
     fi
     if [ -z "${branch_name}" ] ; then
