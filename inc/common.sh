@@ -41,7 +41,17 @@ Your git config is missing parameters. You'll want to add sections like:
     # These are optional, with these defaults:
     # remote-checkout-branch = main
     # tracking-branch = origin/main
+    #
+    # or
+    #
+    command = ""
 EOF
+}
+
+_git_is_key_set() {
+    local key
+    key="${1}"
+    git config --get "${key}" >/dev/null
 }
 
 _git_get_conf_to_env() {
@@ -74,11 +84,16 @@ common_setup_env() {
     REPO_DIR=$(git rev-parse --show-toplevel)
     BRANCH_LIST=${REPO_DIR}/.git/jgit-branches
     _git_get_conf_to_env GITREMOTE "jgit.default"
-    _git_get_conf_to_env TRACK_BRANCH "jgit.${GITREMOTE}.tracking-branch" "${GITREMOTE}/main"
-    _git_get_conf_to_env REMOTE_DIR "jgit.${GITREMOTE}.remote-dir"
-    _git_get_conf_to_env REMOTE_CHECKOUT_BRANCH "jgit.${GITREMOTE}.remote-checkout-branch" "main"
-    _git_get_conf_to_env REMOTE_NAME_ON_DIR "jgit.${GITREMOTE}.remote-name-on-remote-dir"
-    _git_get_conf_to_env SSHREMOTE "jgit.${GITREMOTE}.ssh-hostname"
+    _git_get_conf_to_env TRACK_BRANCH "jgit.${GITREMOTE}.tracking-branch" "origin/main"
+
+    if _git_is_key_set "jgit.${GITREMOTE}.command" ; then
+        _git_get_conf_to_env MK_COMMAND "jgit.${GITREMOTE}.command"
+    else
+        _git_get_conf_to_env REMOTE_DIR "jgit.${GITREMOTE}.remote-dir"
+        _git_get_conf_to_env REMOTE_CHECKOUT_BRANCH "jgit.${GITREMOTE}.remote-checkout-branch" "main"
+        _git_get_conf_to_env REMOTE_NAME_ON_DIR "jgit.${GITREMOTE}.remote-name-on-remote-dir"
+        _git_get_conf_to_env SSHREMOTE "jgit.${GITREMOTE}.ssh-hostname"
+    fi
 
     [ -r "${BRANCH_LIST}" ] || {
         info "Couldn't find ${BRANCH_LIST} branch list file, creating a default"
