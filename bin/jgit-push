@@ -14,6 +14,7 @@ MERGE_OVERRIDES=()
 cleanup() {
     info "Cleaning up, returning local branch to ${CUR_BRANCH}."
     git checkout "${CUR_BRANCH}"
+    git branch -D "${DEV_BRANCH}"
 }
 
 trap cleanup SIGHUP SIGINT SIGQUIT SIGABRT EXIT
