@@ -109,7 +109,7 @@ common_setup_env() {
 }
 
 _run_extra_cmd() {
-    _git_get_conf_to_env REMOTE_POST_PUSH_CMD "jgit.${GITREMOTE}.remote_after_push_cmd"
+    _git_get_conf_to_env REMOTE_POST_PUSH_CMD "jgit.${GITREMOTE}.remote-after-push-cmd"
     ssh "${SSHREMOTE}" -- "${REMOTE_POST_PUSH_CMD}"
 }
 
