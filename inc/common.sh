@@ -104,6 +104,7 @@ common_setup_env() {
         e) export RUN_EXTRA_CMD="${OPTARG}";;
         h | *) _usage;;
       esac
+    done
 }
 
 _run_extra_cmd() {
