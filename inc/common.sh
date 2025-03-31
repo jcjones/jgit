@@ -74,8 +74,7 @@ _usage() {
     cat <<EOF
 ${0} [-e]
 
--e      Run the command in jgit.${GITREMOTE}.remote_after_push_cmd on the remote
-        host after a successful jgit-push.
+-e COMMAND     Run the command on the remote host after a successful jgit-push.
 EOF
     exit 1
 }
@@ -100,19 +99,17 @@ common_setup_env() {
         touch "${BRANCH_LIST}"
     }
 
-    while getopts "eh" opt; do
+    while getopts "e:h" opt; do
       case "${opt}" in
-        e) export COMMON_RUN_EXTRA_CMD=1;;
+        e) export RUN_EXTRA_CMD="${OPTARG}";;
         h | *) _usage;;
       esac
-    done
 }
 
 _run_extra_cmd() {
-    _git_get_conf_to_env REMOTE_POST_PUSH_CMD "jgit.${GITREMOTE}.remote-after-push-cmd"
-    ssh "${SSHREMOTE}" -- "${REMOTE_POST_PUSH_CMD}"
+    ssh -t "${SSHREMOTE}" -- "cd ${REMOTE_DIR}; ${RUN_EXTRA_CMD}"
 }
 
 common_complete_push() {
-    [ -n "${COMMON_RUN_EXTRA_CMD:-}" ] && _run_extra_cmd
+    [ -n "${RUN_EXTRA_CMD:-}" ] && _run_extra_cmd
 }
