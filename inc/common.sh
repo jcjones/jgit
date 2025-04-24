@@ -114,3 +114,45 @@ _run_extra_cmd() {
 common_complete_push() {
     [ -n "${RUN_EXTRA_CMD:-}" ] && _run_extra_cmd
 }
+
+branch_apparently_merged() {
+    branch_name="${1}"
+
+    if [[ "${branch_name}" =~ (IN-0000) ]] ; then
+       echo "# ${branch_name} is a WIP branch"
+       return 1
+    fi
+
+    if git branch -r | grep "${GITREMOTE}/${branch_name}" >/dev/null ; then
+        echo "# Found ${branch_name} in origin branches, probably not merged"
+        return 1
+    fi
+
+    if [[ "${branch_name}" =~ (IN-[0-9]+) ]] ; then
+        ticket_number="${BASH_REMATCH[1]}"
+
+        if git log -n 500 ${TRACK_BRANCH} | grep "${ticket_number}" >/dev/null 2>&1 ; then
+            echo "# Found ${ticket_number} in git log, probably merged"
+            return 0
+        fi
+    fi
+
+    # Get the patch-id of the diff of the squash
+    patch_id=$(git diff "$(git merge-base "${TRACK_BRANCH}" "${branch_name}")" "${branch_name}" \
+        | git patch-id --stable | cut -d' ' -f1)
+    result="$(git rev-list "${branch_name}..${TRACK_BRANCH}" | while read -r line ; do
+            other_patch_id="$(git diff ${line}~ ${line} | git patch-id --stable | cut -d' ' -f1)"
+            if [[ "${patch_id}" = "${other_patch_id}" ]]; then
+                echo "${line}"
+                exit 0
+            fi
+        done
+    )"
+
+    if [ -n "${result}" ]; then
+        echo "# Found squash merge at revision ${result}"
+        return 0
+    fi
+
+    return 1
+}

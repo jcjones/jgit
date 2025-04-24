@@ -18,33 +18,6 @@ cleanup() {
     git checkout "${CUR_BRANCH}"
 }
 
-may_be_merged() {
-    branch_name="${1}"
-
-    if [[ "${branch_name}" =~ (IN-0000) ]] ; then
-       echo "# ${branch_name} is a WIP branch"
-       return 1
-    fi
-
-    if git branch -r | grep "${GITREMOTE}/${branch_name}" >/dev/null ; then
-        echo "# Found ${branch_name} in origin branches, probably not merged"
-        return 1
-    fi
-
-    if [[ "${branch_name}" =~ (IN-[0-9]+) ]] ; then
-        ticket_number="${BASH_REMATCH[1]}"
-
-        if git log -n 500 ${TRACK_BRANCH} | grep "${ticket_number}" >/dev/null 2>&1 ; then
-            echo "# Found ${ticket_number} in git log, probably merged"
-            return 0
-        fi
-
-    fi
-
-    echo "# ${branch_name} Not found, probably not merged"
-    return 1
-}
-
 trap cleanup SIGHUP SIGINT SIGQUIT SIGABRT EXIT
 
 git diff --quiet || {
@@ -67,7 +40,7 @@ git fetch --prune || {
     exit 1
 }
 
-while IFS= read -r branch_name
+while IFS= read -u 3 -r branch_name
 do
     [[ ${branch_name} =~ ^#.* ]] && continue
     [[ -z ${branch_name} ]] && continue
@@ -79,7 +52,7 @@ do
         continue
     }
 
-    if may_be_merged "${branch_name}"; then
+    if branch_apparently_merged "${branch_name}"; then
         sed_cmd="sed"
 
         if [ "$(uname)" == "Darwin" ]; then
@@ -91,6 +64,11 @@ do
         if hash gsed; then
             sed_cmd="gsed"
         fi
+
+        if ! hash gum; then
+            error "Need gum"
+        fi
+
         if gum confirm "Confirm cleaning up ${branch_name}"; then
             git branch -D ${branch_name} || error "Couldn't remove branch from git"
             ${sed_cmd} -i -n "/${branch_name}/!p" ${BRANCH_LIST} || error "Couldn't cleanup from ${BRANCH_LIST}"
@@ -99,4 +77,4 @@ do
 
     echo ""
 
-done < "${BRANCH_LIST}"
+done 3< "${BRANCH_LIST}"
