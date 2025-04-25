@@ -22,7 +22,7 @@ PARSER.add_argument(
     help="Configure the logging level, defaults to INFO.",
 )
 PARSER.add_argument(
-    "path",
+    "--path", "-p",
     default=Path.cwd(),
     type=lambda x: Path(x),
     help="Path to operate from"

@@ -40,6 +40,9 @@ class JGitBranches:
     def list(self):
         return list(self.iter())
 
+    def contents(self):
+        return self.path.read_text()
+
     def remove(self, branch):
         contents = self.path.read_text()
         with self.path.open("w") as f:
