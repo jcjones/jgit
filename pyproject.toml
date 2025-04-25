@@ -1,0 +1,10 @@
+[project]
+name = "jgit"
+version = "0.1.0"
+description = "Workflow for Git"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [ "iterfzf", "rich", "sh" ]
+
+[project.scripts]
+jgit-cleanup-branches = "cleanup:main"
