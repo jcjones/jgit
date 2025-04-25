@@ -11,9 +11,7 @@ from rich.syntax import Syntax
 
 import common
 
-PARSER = argparse.ArgumentParser(
-    description="Edit jgit branch list"
-)
+PARSER = argparse.ArgumentParser(description="Edit jgit branch list")
 PARSER.add_argument(
     "--log-level",
     default=logging.INFO,
@@ -21,15 +19,17 @@ PARSER.add_argument(
     help="Configure the logging level, defaults to INFO.",
 )
 PARSER.add_argument(
-    "--path", "-p",
+    "--path",
+    "-p",
     default=Path.cwd(),
     type=lambda x: Path(x),
-    help="Path to operate from"
+    help="Path to operate from",
 )
+
 
 def main():
     args = PARSER.parse_args()
-    logger = common.configure_logging(args)
+    common.configure_logging(args)
     os.chdir(args.path)
 
     branches = common.JGitBranches(args.path)
@@ -39,6 +39,7 @@ def main():
     console = Console()
     console.print("Branch list:")
     console.print(syntax)
+
 
 if __name__ == "__main__":
     main()

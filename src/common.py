@@ -4,15 +4,18 @@ from iterfzf import iterfzf
 from pathlib import Path
 import logging
 
+
 class NoGitRepoException(Exception):
     pass
+
 
 class NotConfiguredException(Exception):
     pass
 
+
 def configure_logging(args):
     logging.basicConfig(level=args.log_level)
-    logging.getLogger("sh.command").setLevel(logging.WARNING)
+    logging.getLogger("sh").setLevel(logging.WARNING)
     return logging.getLogger("jgit")
 
 
@@ -23,6 +26,7 @@ def dot_git(pos=Path.cwd()):
             return dot_git
         pos = pos.parent
     raise NoGitRepoException("Could not find a parent directory with a .git subdir")
+
 
 class JGitBranches:
     def __init__(self, path):
@@ -53,6 +57,7 @@ class JGitBranches:
     def append(self, branch):
         with self.path.open("a") as f:
             print(branch, file=f)
+
 
 def confirm(prompt):
     result = iterfzf(["Yes", "No"], prompt=prompt)

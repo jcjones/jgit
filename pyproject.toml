@@ -10,3 +10,4 @@ dependencies = [ "iterfzf", "rich", "sh" ]
 jgit-cleanup-branches = "cleanup:main"
 jgit-edit-branches = "edit:main"
 jgit-change-branch = "change:main"
+jgit-dev = "dev:main"
