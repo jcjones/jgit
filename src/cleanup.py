@@ -5,6 +5,7 @@ import logging
 import os
 from pathlib import Path
 
+from rich.console import Console
 from sh.contrib import git
 import sh
 
@@ -66,7 +67,7 @@ def is_local_branch(branch):
 
 def main():
     args = PARSER.parse_args()
-    logger = common.configure_logging(args)
+    common.configure_logging(args)
     os.chdir(args.path)
 
     branches = common.JGitBranches(args.path)
@@ -77,29 +78,31 @@ def main():
 
     current_branch = git("symbolic-ref", "--short", "HEAD").strip()
 
-    for branch in branch_iter:
-        if branch == args.tracking:
-            continue
-        if branch == current_branch:
-            logger.info("Skipping current branch %s", branch)
-            continue
+    console = Console()
+    with console.status("[bold green]Cleaning branches..."):
+        for branch in branch_iter:
+            if branch == args.tracking:
+                continue
+            if branch == current_branch:
+                console.log(f"Skipping current branch {branch}")
+                continue
 
-        try:
-            git("rev-parse", branch)
-        except sh.ErrorReturnCode_128:
-            logger.info("%s doesn't exist", branch)
-            continue
+            try:
+                git("rev-parse", branch)
+            except sh.ErrorReturnCode_128:
+                console.log(f"{branch} doesn't exist")
+                continue
 
-        if not branch_apparently_merged(tracking=args.tracking, branch=branch):
-            logger.info("%s has outstanding changes", branch)
-            continue
+            if not branch_apparently_merged(tracking=args.tracking, branch=branch):
+                console.log(f"{branch} has outstanding changes")
+                continue
 
-        logger.info("%s is apparently merged", branch)
+            console.log(f"{branch} is apparently merged")
 
-        if common.confirm(f"Delete apparently-merged branch {branch}?"):
-            logger.info("Deleting %s", branch)
-            git("branch", "-D", branch, _tty_out=True)
-            branches.remove(branch)
+            if common.confirm(f"Delete apparently-merged branch {branch}?"):
+                console.log(f"Deleting {branch}")
+                git("branch", "-D", branch, _tty_out=True)
+                branches.remove(branch)
 
 
 if __name__ == "__main__":

@@ -55,6 +55,8 @@ class JGitBranches:
                     print(line, file=f)
 
     def append(self, branch):
+        if branch in self.list():
+            return
         with self.path.open("a") as f:
             print(branch, file=f)
 

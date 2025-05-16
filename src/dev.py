@@ -5,6 +5,7 @@ import logging
 import os
 from pathlib import Path
 
+from rich.console import Console
 from sh.contrib import git
 from sh import ErrorReturnCode_1
 
@@ -29,7 +30,6 @@ PARSER.add_argument("--branch", "-b", default="dev", help="Dev branch to use")
 
 
 def construct_dev_branch(*, dest_branch, branches, tracking):
-    logger = logging.getLogger("construct_dev_branch")
     current_branch = git("symbolic-ref", "--short", "HEAD").strip()
     try:
         git("branch", dest_branch, tracking)
@@ -38,15 +38,17 @@ def construct_dev_branch(*, dest_branch, branches, tracking):
     git("checkout", dest_branch)
     git("reset", "--hard", tracking)
 
-    try:
-        for branch in branches.iter():
-            logger.info("Merging %s into %s", branch, dest_branch)
-            git("merge", "-m", f"Auto-merge {branch} by jgit-dev", branch)
-    except ErrorReturnCode_1:
-        logger.error("Failed to merge %s into %s.", branch, dest_branch)
-        git("merge", "--abort")
-        git("checkout", current_branch)
-        logger.error("Aborted, returned to %s", current_branch)
+    console = Console()
+    with console.status(f"[bold green]Merging branches into {dest_branch}"):
+        try:
+            for branch in branches.iter():
+                console.log(f"Merging {branch} into {dest_branch}")
+                git("merge", "-m", f"Auto-merge {branch} by jgit-dev", branch)
+        except ErrorReturnCode_1:
+            console.log(f"Failed to merge {branch} into {dest_branch}.")
+            git("merge", "--abort")
+            git("checkout", current_branch)
+            console.log(f"Aborted, returned to {current_branch}")
 
 
 def main():
