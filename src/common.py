@@ -61,6 +61,6 @@ class JGitBranches:
             print(branch, file=f)
 
 
-def confirm(prompt):
-    result = iterfzf(["Yes", "No"], prompt=prompt)
+def confirm(header):
+    result = iterfzf(["Yes", "No"], header=header)
     return result == "Yes"
