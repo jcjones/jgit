@@ -2,7 +2,10 @@
 
 from iterfzf import iterfzf
 from pathlib import Path
+from sh.contrib import git
+
 import logging
+import sh
 
 
 class NoGitRepoException(Exception):
@@ -32,12 +35,26 @@ class JGitBranches:
     def __init__(self, path):
         self.path = dot_git(path) / "jgit-branches"
 
+    def _default_branch(self):
+        try:
+            remote = "origin"
+            return (
+                git("symbolic-ref", "--short", f"refs/remotes/{remote}/HEAD")
+                .removeprefix(f"{remote}/")
+                .strip()
+            )
+        except sh.ErrorReturnCode_128:
+            log = logging.getLogger("jgit")
+            log.error("You need to set 'git remote set-head origin -a'")
+            return "main"
+
     def iter(self):
         try:
             contents = self.path.read_text()
             for line in contents.splitlines():
                 if not line.startswith("#"):
                     yield line
+            yield self._default_branch()
         except FileNotFoundError:
             raise NotConfiguredException("No branches are configured in %s", self.path)
 
