@@ -28,13 +28,17 @@ PARSER.add_argument(
 
 def main():
     args = PARSER.parse_args()
-    common.configure_logging(args)
+    log = common.configure_logging(args)
     os.chdir(args.path)
 
     branches = common.JGitBranches(args.path)
-    branch = iterfzf(branches.iter(), prompt="Branch?")
-    if branch:
-        git("checkout", branch)
+    selection = iterfzf(branches.iter(), prompt="Branch?")
+    if selection:
+        branch, _, notes = selection.partition("#")
+        if notes:
+            log.warn("Selected branch %s with notes %s", branch.strip(), notes.strip())
+
+        git.checkout(branch.strip())
 
 
 if __name__ == "__main__":

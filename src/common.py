@@ -48,12 +48,22 @@ class JGitBranches:
             log.error("You need to set 'git remote set-head origin -a'")
             return "main"
 
+    def _is_branch(self, name):
+        try:
+            git.show(name)
+            return True
+        except sh.ErrorReturnCode_128:
+            return False
+
     def iter(self):
         try:
             contents = self.path.read_text()
             for line in contents.splitlines():
-                if not line.startswith("#"):
-                    yield line
+                if line.startswith("#"):
+                    continue
+                if not self._is_branch(line):
+                    line = f"{line} # Branch is missing"
+                yield line
             yield self._default_branch()
         except FileNotFoundError:
             raise NotConfiguredException("No branches are configured in %s", self.path)
