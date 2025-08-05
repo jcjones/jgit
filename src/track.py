@@ -32,9 +32,9 @@ def main():
     common.configure_logging(args)
     os.chdir(args.path)
 
-    branches = common.JGitBranches(args.path)
-
     current_branch = git("symbolic-ref", "--short", "HEAD").strip()
+
+    branches = common.JGitBranches(args.path)
     branches.append(current_branch)
 
     syntax = Syntax(branches.contents(), "ini", theme="monokai", line_numbers=True)

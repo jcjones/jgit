@@ -82,8 +82,12 @@ class JGitBranches:
                     print(line, file=f)
 
     def append(self, branch):
-        if branch in self.list():
-            return
+        try:
+            if branch in self.list():
+                return
+        except NotConfiguredException:
+            log = logging.getLogger("jgit")
+            log.info("Creating new file at %s", self.path)
         with self.path.open("a") as f:
             print(branch, file=f)
 
