@@ -57,7 +57,7 @@ def main():
     os.chdir(args.path)
 
     construct_dev_branch(
-        branches=common.JGitBranches(args.path),
+        branches=common.JGitBranches(args.path, logging.getLogger(__name__)),
         tracking=args.tracking,
         dest_branch=args.branch,
     )

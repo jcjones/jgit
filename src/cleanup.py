@@ -70,7 +70,7 @@ def main():
     common.configure_logging(args)
     os.chdir(args.path)
 
-    branches = common.JGitBranches(args.path)
+    branches = common.JGitBranches(args.path, logging.getLogger(__name__))
     if args.all:
         branch_iter = filter(is_local_branch, git("branch").split())
     else:

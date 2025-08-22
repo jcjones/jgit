@@ -33,7 +33,7 @@ def main():
     common.configure_logging(args)
     os.chdir(args.path)
 
-    branches = common.JGitBranches(args.path)
+    branches = common.JGitBranches(args.path, logging.getLogger(__name__))
 
     console = Console()
 

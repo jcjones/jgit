@@ -32,8 +32,9 @@ def dot_git(pos=Path.cwd()):
 
 
 class JGitBranches:
-    def __init__(self, path):
+    def __init__(self, path, log):
         self.path = dot_git(path) / "jgit-branches"
+        self.log = log.getChild(__name__)
 
     def _default_branch(self):
         try:
@@ -44,8 +45,7 @@ class JGitBranches:
                 .strip()
             )
         except sh.ErrorReturnCode_128:
-            log = logging.getLogger("jgit")
-            log.error("You need to set 'git remote set-head origin -a'")
+            self.log.error("You need to set 'git remote set-head origin -a'")
             return "main"
 
     def _is_branch(self, name):
@@ -56,17 +56,44 @@ class JGitBranches:
             return False
 
     def iter(self):
+        tracked = {}
         try:
             contents = self.path.read_text()
             for line in contents.splitlines():
                 if line.startswith("#"):
                     continue
-                if not self._is_branch(line):
-                    line = f"{line} # Branch is missing"
-                yield line
-            yield self._default_branch()
+                parts = line.split("#", maxsplit=1)
+                branchname = parts[0].strip()
+                comment_list = [parts[1]] if len(parts) == 2 else []
+                tracked[branchname] = comment_list
         except FileNotFoundError:
-            raise NotConfiguredException("No branches are configured in %s", self.path)
+            self.log.debug("No branches are configured in %s", self.path)
+
+        for line in git.branch(
+            list=True, verbose=True, all=True, sort="refname", _iter=True
+        ):
+            branchname, comment = line.removeprefix("* ").strip().split(maxsplit=1)
+            branchname = branchname.strip()
+            if branchname in tracked:
+                comment_list = tracked[branchname]
+            else:
+                comment_list = []
+
+            if line.startswith("* "):
+                comment_list.append("[HEAD]")
+            if branchname in tracked:
+                comment_list.append("[tracked]")
+
+            if comment_list:
+                yield f"{branchname} # {' '.join(comment_list)}"
+            else:
+                yield branchname
+
+            if branchname in tracked:
+                del tracked[branchname]
+
+        for branchname, comment_list in tracked.items():
+            self.log.warn("Missing tracked branch: %s %s", branchname, comment_list)
 
     def list(self):
         return list(self.iter())
@@ -86,8 +113,7 @@ class JGitBranches:
             if branch in self.list():
                 return
         except NotConfiguredException:
-            log = logging.getLogger("jgit")
-            log.info("Creating new file at %s", self.path)
+            self.log.info("Creating new file at %s", self.path)
         with self.path.open("a") as f:
             print(branch, file=f)
 

@@ -34,7 +34,7 @@ def main():
 
     current_branch = git("symbolic-ref", "--short", "HEAD").strip()
 
-    branches = common.JGitBranches(args.path)
+    branches = common.JGitBranches(args.path, logging.getLogger(__name__))
     branches.append(current_branch)
 
     syntax = Syntax(branches.contents(), "ini", theme="monokai", line_numbers=True)

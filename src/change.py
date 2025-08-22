@@ -31,12 +31,12 @@ def main():
     log = common.configure_logging(args)
     os.chdir(args.path)
 
-    branches = common.JGitBranches(args.path)
+    branches = common.JGitBranches(args.path, log)
     selection = iterfzf(branches.iter(), prompt="Branch?")
     if selection:
         branch, _, notes = selection.partition("#")
         if notes:
-            log.warn("Selected branch %s with notes %s", branch.strip(), notes.strip())
+            log.info("Selected branch %s with notes %s", branch.strip(), notes.strip())
 
         git.checkout(branch.strip())
 
