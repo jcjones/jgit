@@ -56,7 +56,7 @@ do
         sed_cmd="sed"
 
         if [ "$(uname)" == "Darwin" ]; then
-            if ! hash gsed; then
+            if ! hash gsed >/dev/null; then
                 error "You're on MacOS but don't have gsed installed, please install it."
             fi
         fi
