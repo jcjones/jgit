@@ -83,9 +83,9 @@ class JGitBranches:
                 comment_list.append("[tracked]")
 
             if comment_list:
-                yield f"{branchname} # {' '.join(comment_list)}"
+                yield (branchname, comment_list)
             else:
-                yield branchname
+                yield (branchname, [])
 
             if branchname in tracked:
                 del tracked[branchname]
@@ -93,14 +93,20 @@ class JGitBranches:
         for branchname, comment_list in tracked.items():
             self.log.warn("Missing tracked branch: %s %s", branchname, comment_list)
 
+    def iter_commented_strings(self):
+        return map(lambda x: f"{x[0]} # {' '.join(x[1])}", self.iter())
+
     def list(self):
-        return list(self.iter())
+        return list([t[0] for t in self.iter()])
 
     def contents(self):
         return "\n".join(self.list())
 
     def remove(self, branch):
-        contents = self.path.read_text()
+        try:
+            contents = self.path.read_text()
+        except FileNotFoundError:
+            return
         with self.path.open("w") as f:
             for line in contents.splitlines():
                 if branch not in line:

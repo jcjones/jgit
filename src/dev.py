@@ -41,8 +41,10 @@ def construct_dev_branch(*, dest_branch, branches, tracking):
     console = Console()
     with console.status(f"[bold green]Merging branches into {dest_branch}"):
         try:
-            for branch in branches.iter():
-                console.log(f"Merging {branch} into {dest_branch}")
+            for branch, comments in branches.iter():
+                console.log(
+                    f"Merging {branch} into {dest_branch} (Comments: {comments})"
+                )
                 git("merge", "-m", f"Auto-merge {branch} by jgit-dev", branch)
         except ErrorReturnCode_1:
             console.log(f"Failed to merge {branch} into {dest_branch}.")

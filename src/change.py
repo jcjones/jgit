@@ -32,7 +32,7 @@ def main():
     os.chdir(args.path)
 
     branches = common.JGitBranches(args.path, log)
-    selection = iterfzf(branches.iter(), prompt="Branch?")
+    selection = iterfzf(branches.iter_commented_strings(), prompt="Branch?")
     if selection:
         branch, _, notes = selection.partition("#")
         if notes:

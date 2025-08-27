@@ -74,7 +74,7 @@ def main():
     if args.all:
         branch_iter = filter(is_local_branch, git("branch").split())
     else:
-        branch_iter = branches.iter()
+        branch_iter = map(lambda t: t[0], branches.iter())
 
     current_branch = git("symbolic-ref", "--short", "HEAD").strip()
 
