@@ -1,11 +1,13 @@
 #!/usr/bin/python3
 
+from pathlib import Path
 import argparse
 import logging
 import os
-from pathlib import Path
+import sys
 
 from sh.contrib import git
+from sh import gh
 from rich.console import Console
 from rich.syntax import Syntax
 from rich.prompt import Prompt
@@ -37,16 +39,19 @@ def main():
 
     console = Console()
 
-    current_branch = git("symbolic-ref", "--short", "HEAD").strip()
-    new_branch = Prompt().ask(
-        "New branch name", console=console, default=current_branch
+    gh.issue.list(
+        limit=10,
+        _out=sys.stdout,
+        _err=sys.stderr,
     )
 
-    if new_branch != current_branch:
-        branches.remove(current_branch)
-        branches.append(new_branch)
-        console.log(f"Renaming {current_branch} to {new_branch}")
-        git.branch("-m", new_branch)
+    current_branch = git("symbolic-ref", "--short", "HEAD").strip()
+    new_branch = (
+        Prompt().ask("New branch name", console=console, default=current_branch).strip()
+    )
+
+    git.branch(new_branch, branches._default_branch())
+    git.checkout(new_branch)
 
     syntax = Syntax(branches.contents(), "ini", theme="monokai", line_numbers=True)
     console.print("Branch list:")

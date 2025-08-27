@@ -9,6 +9,7 @@ dependencies = [ "iterfzf", "rich", "sh" ]
 [project.scripts]
 jgit-cleanup-branches = "cleanup:main"
 jgit-edit-branches = "edit:main"
+jgit-new-branch = "new:main"
 jgit-change-branch = "change:main"
 jgit-dev = "dev:main"
 jgit-track-this = "track:main"

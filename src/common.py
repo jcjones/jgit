@@ -69,9 +69,7 @@ class JGitBranches:
         except FileNotFoundError:
             self.log.debug("No branches are configured in %s", self.path)
 
-        for line in git.branch(
-            list=True, verbose=True, all=True, sort="refname", _iter=True
-        ):
+        for line in git.branch(list=True, verbose=True, sort="refname", _iter=True):
             branchname, comment = line.removeprefix("* ").strip().split(maxsplit=1)
             branchname = branchname.strip()
             if branchname in tracked:
@@ -99,13 +97,13 @@ class JGitBranches:
         return list(self.iter())
 
     def contents(self):
-        return self.path.read_text()
+        return "\n".join(self.list())
 
     def remove(self, branch):
         contents = self.path.read_text()
         with self.path.open("w") as f:
             for line in contents.splitlines():
-                if line != branch:
+                if branch not in line:
                     print(line, file=f)
 
     def append(self, branch):
