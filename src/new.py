@@ -14,7 +14,7 @@ from rich.prompt import Prompt
 
 import common
 
-PARSER = argparse.ArgumentParser(description="Rename branch")
+PARSER = argparse.ArgumentParser(description="New branch")
 PARSER.add_argument(
     "--log-level",
     default=logging.INFO,

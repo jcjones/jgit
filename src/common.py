@@ -60,6 +60,8 @@ class JGitBranches:
         try:
             contents = self.path.read_text()
             for line in contents.splitlines():
+                if not line:
+                    continue
                 if line.startswith("#"):
                     continue
                 parts = line.split("#", maxsplit=1)
@@ -70,7 +72,9 @@ class JGitBranches:
             self.log.debug("No branches are configured in %s", self.path)
 
         for line in git.branch(list=True, verbose=True, sort="refname", _iter=True):
-            branchname, comment = line.removeprefix("* ").strip().split(maxsplit=1)
+            branchname, comment = (
+                line.removeprefix("* ").removeprefix("+ ").strip().split(maxsplit=1)
+            )
             branchname = branchname.strip()
             if branchname in tracked:
                 comment_list = tracked[branchname]
