@@ -33,6 +33,10 @@ def new():
     log = common.configure_logging(args)
     os.chdir(args.path)
 
+    if ".worktrees" in args.path.name:
+        log.error("You probably don't want to run this from another worktree.")
+        return
+
     branches = common.JGitBranches(args.path, logging.getLogger(__name__))
 
     worktrees = common.dot_git(args.path).parent / ".worktrees"
