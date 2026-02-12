@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 from pathlib import Path
+from itertools import chain
 import argparse
 import logging
 import os
@@ -33,7 +34,7 @@ def new():
     log = common.configure_logging(args)
     os.chdir(args.path)
 
-    if ".worktrees" in args.path.name:
+    if ".worktrees" in str(args.path):
         log.error("You probably don't want to run this from another worktree.")
         return
 
@@ -45,17 +46,31 @@ def new():
 
     console = Console()
 
-    selection = iterfzf(branches.iter_commented_strings(), prompt="Branch?")
+    NEW_MARKER = "--NEW--"
+
+    selection = iterfzf(
+        chain(branches.iter_commented_strings(), [NEW_MARKER]), prompt="Branch?"
+    )
     if selection:
-        branch, _, notes = selection.partition("#")
-        if notes:
-            log.info("Selected branch %s with notes %s", branch.strip(), notes.strip())
+        if selection == NEW_MARKER:
+            branch = Prompt().ask("New branch name", console=console).strip()
+            if not branch:
+                log.error("No branch?")
+                return
+            git.branch(branch, branches._default_branch())
+        else:
+            branch, _, notes = selection.partition("#")
+            if notes:
+                log.info(
+                    "Selected branch %s with notes %s", branch.strip(), notes.strip()
+                )
 
     branch = branch.strip()
     new_wt = Prompt().ask("New worktree name", console=console, default=branch).strip()
     new_wt_path = worktrees / new_wt
 
     git.worktree.add(new_wt_path, branch)
+    log.info("Worktree ready at branch %s: cd %s", branch, str(new_wt_path))
 
 
 def remove():
@@ -72,7 +87,12 @@ def remove():
     selection = iterfzf(wt_list)
     if selection:
         worktree_path, commit, branch = selection.split()
+        if branch:
+            branch = branch.strip("[]")
         if Confirm().ask(
             f"Really remove {worktree_path}, {commit}, {branch}?", console=console
         ):
             git.worktree.remove(worktree_path)
+
+        if Confirm().ask(f"Also remove {branch}?", console=console):
+            git.branch("-D", branch)
