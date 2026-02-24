@@ -121,5 +121,5 @@ All commands accept:
 ## Testing
 
 ```sh
-uv tool run --with pytest pytest
+uv run pytest
 ```
