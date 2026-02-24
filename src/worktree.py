@@ -75,6 +75,7 @@ def new():
 
 def remove():
     args = PARSER.parse_args()
+    log = common.configure_logging(args)
     os.chdir(args.path)
 
     worktrees = common.dot_git(args.path).parent / ".worktrees"
@@ -82,17 +83,27 @@ def remove():
 
     console = Console()
 
-    wt_list = git.worktree.list().split("\n")
+    wt_list = filter(lambda x: ".worktrees" in x, git.worktree.list().split("\n"))
+    selections = iterfzf(wt_list, multi=True, prompt="Worktrees to delete?:")
 
-    selection = iterfzf(wt_list)
-    if selection:
+    wts_to_remove = []
+    bs_to_delete = []
+
+    for selection in selections:
         worktree_path, commit, branch = selection.split()
         if branch:
             branch = branch.strip("[]")
         if Confirm().ask(
             f"Really remove {worktree_path}, {commit}, {branch}?", console=console
         ):
-            git.worktree.remove(worktree_path)
+            wts_to_remove.append(worktree_path)
 
-        if Confirm().ask(f"Also remove {branch}?", console=console):
-            git.branch("-D", branch)
+            if Confirm().ask(f"Also remove {branch}?", console=console):
+                bs_to_delete.append(branch)
+
+    for worktree_path in wts_to_remove:
+        log.info("Removing %s", worktree_path)
+        git.worktree.remove(worktree_path)
+    for branch in bs_to_delete:
+        log.info("Deleting branch %s", branch)
+        git.branch("-D", branch)
